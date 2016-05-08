@@ -18,21 +18,29 @@ def removeSpecialCharacters(string):
     return string
 
 try:
-    r = requests.get("http://dailybruin.com/2016/05/06/bruins-united-sails-past-waves-of-change-in-2016-usac-election/")
+    r = requests.get("http://dailybruin.com/2016/05/06/students-approve-all-four-referenda-on-usac-election-ballot/")
     soup = BeautifulSoup(r.content, "html.parser")
 
-    headline = soup.find("div", class_="db-post-headline")
+    headline = str(soup.find("div", class_="db-post-headline").text)
     authors = soup.find("div", class_="db-byline").find_all("a")
     tempList = []
     for author in authors:
-        tempList.append(str(author))
-    story = soup.find("div", class_="db-post-content").text
+        tempList.append(author.text)
+    story = soup.find("div", class_="db-post-content")
+    story = str(story.text).split("\n<!-- Simple Share Buttons Adder")[0]
+    dates = soup.find_all("h5")
+    postingDate = ""
+    for date in dates:
+        postingDate += str(date.text)
+    imageLink = str(soup.find("div", class_="db-image text-center")).split("src=")[1].split("width=")[0].split("-")[0]
+    image = "<img src=" + imageLink + ".jpg\">"
+    imageCaption = str(soup.find("p", class_="db-image-caption").text).replace("\t", "").replace("\n", "")
 
-    obj = {u"headline": str(headline), u"authors": tempList}
+    obj = {u"headline": headline, u"postDate": postingDate, u"authors": tempList, u"image": image, u"caption": imageCaption, u"content": story}
 
     print(json.dumps(obj, indent=4))
     with open("output.txt", "w") as text_file:
-        text_file.write("working")
+        text_file.write(json.dumps(obj, indent=4))
         print("GOOD!")
 except requests.exceptions.RequestException as e:    # This is the correct syntax
     print(e)
