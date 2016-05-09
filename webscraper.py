@@ -10,19 +10,23 @@ import re
     2. pip install beautifulsoup4
 '''
 
-"""special characters like: ”  """
+"""special characters like: ” (NOT USING THIS IN THE CODE!!!)"""
 def removeSpecialCharacters(string):
     string = string.replace("”", "\"")
     string = string.replace("“", "\"")
     string = string.replace("’", "\'")
-    string = string.replace("–", "\'")
+    string = string.replace("–", "-")
     return string
 
 """Enter URLs as strings"""
 urls = [
     "http://dailybruin.com/2016/05/06/students-approve-all-four-referenda-on-usac-election-ballot/",
     "http://dailybruin.com/2016/05/06/volunteer-center-explains-rationale-for-ending-collaboration-with-womp/",
-    "http://dailybruin.com/2016/05/05/students-love-of-baking-blooms-into-sourdough-bread-business/"
+    "http://dailybruin.com/2016/05/05/students-love-of-baking-blooms-into-sourdough-bread-business/",
+    "http://dailybruin.com/2016/05/06/jasmine-aquino-allowing-usac-to-campaign-on-the-hill-would-promote-political-dialogue/",
+    "http://dailybruin.com/2016/05/06/track-athletes-to-compete-at-pac-12-multis-championship/",
+    "http://dailybruin.com/2016/05/06/usac-election-board-must-disqualify-social-justice-referendum/",
+    "http://dailybruin.com/2016/05/06/abhishek-shetty-usac-election-board-should-extend-physical-campaigning-period/"
 ]
 
 obj = []
@@ -55,12 +59,12 @@ for url in urls:
         """this needs works"""
         imageCaption = str(soup.find("p", class_="db-image-caption").text).replace("\t", "").replace("\n", "")
 
-        obj.append({u"headline": headline, u"postDate": postingDate, u"authors": tempList, u"image": imageList, u"caption": imageCaption, u"content": story})
+        obj.append({u"headline": headline, u"postDate": postingDate, u"authors": tempList, u"images": imageList, u"caption": imageCaption, u"content": story, u"url": url})
 
 #       print(json.dumps(obj, indent=4))
         with open("output.txt", "w") as text_file:
             text_file.write(json.dumps(obj, indent=4))
             print("URL number " + str(count) + " scraped" + " (" + str(url) + ")")
             count += 1
-    except requests.exceptions.RequestException as e:    # This is the correct syntax
+    except requests.exceptions.RequestException as e:
         print(e)
