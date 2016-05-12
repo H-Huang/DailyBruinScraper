@@ -61,10 +61,18 @@ for url in urls:
 
         obj.append({u"headline": headline, u"postDate": postingDate, u"authors": tempList, u"images": imageList, u"caption": imageCaption, u"content": story, u"url": url})
 
-#       print(json.dumps(obj, indent=4))
+        #print(json.dumps(obj, indent=4))
+        #outputs to terminal
+
+        #text file for viewing
         with open("output.txt", "w") as text_file:
             text_file.write(json.dumps(obj, indent=4))
             print("URL number " + str(count) + " scraped" + " (" + str(url) + ")")
             count += 1
+
+        #actual json data
+        with open('data.json', 'w') as f:
+            json.dump(obj, f)
+            
     except requests.exceptions.RequestException as e:
         print(e)
