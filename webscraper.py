@@ -20,13 +20,9 @@ def removeSpecialCharacters(string):
 
 """Enter URLs as strings"""
 urls = [
-    "http://dailybruin.com/2016/05/06/students-approve-all-four-referenda-on-usac-election-ballot/",
-    "http://dailybruin.com/2016/05/06/volunteer-center-explains-rationale-for-ending-collaboration-with-womp/",
-    "http://dailybruin.com/2016/05/05/students-love-of-baking-blooms-into-sourdough-bread-business/",
-    "http://dailybruin.com/2016/05/06/jasmine-aquino-allowing-usac-to-campaign-on-the-hill-would-promote-political-dialogue/",
-    "http://dailybruin.com/2016/05/06/track-athletes-to-compete-at-pac-12-multis-championship/",
-    "http://dailybruin.com/2016/05/06/usac-election-board-must-disqualify-social-justice-referendum/",
-    "http://dailybruin.com/2016/05/06/abhishek-shetty-usac-election-board-should-extend-physical-campaigning-period/"
+    "http://dailybruin.com/2015/11/18/freshman-runner-makes-big-impact-at-ucla-following-european-success/",
+    "http://dailybruin.com/2015/10/27/report-card-ucla-vs-cal/"
+
 ]
 
 obj = []
@@ -43,36 +39,70 @@ for url in urls:
         for author in authors:
             tempList.append(author.text)
         story = soup.find("div", class_="db-post-content")
-        story = str(story.text).split("\n<!-- Simple Share Buttons Adder")[0]
+        story = str(story).split("\n<!-- Simple Share Buttons Adder")[0]
+        story = story + "</div>"
         dates = soup.find_all("h5")
         postingDate = ""
         for date in dates:
             postingDate += str(date.text)
-        regex = re.compile('.*wp.*')
-        imageList = []
-        images = soup.find_all("img", {"class": regex})
+        regex1 = re.compile('.*wp-post-image.*')
+        mainImage = soup.find("img", {"class": regex1})
 
-        for image in images:
-            imageLink = str(image).split("src=")[1].split("-")[0]
-            imageList.append("<img src=" + imageLink + ".jpg\">")
+        #trying to fetch image
+        try:
+            imageLink = str(mainImage).split("src=")[1]
+            imageLink = re.sub(r'-\d\d\dx\d\d\d', '', imageLink)
+            imageLink = imageLink.split("width=")[0][:-1]
+            mainImage = imageLink[1:-1]
+        except:
+            mainImage = ""
 
-        """this needs works"""
-        imageCaption = str(soup.find("p", class_="db-image-caption").text).replace("\t", "").replace("\n", "")
+        #trying to get title image caption
+        try:
+            imageCaption = str(soup.find("p", class_="db-image-caption").text).replace("\t", "").replace("\n", "")
+        except:
+            imageCaption = ""
 
-        obj.append({u"headline": headline, u"postDate": postingDate, u"authors": tempList, u"images": imageList, u"caption": imageCaption, u"content": story, u"url": url})
+        secondaryImages = []
+        regex2 = re.compile('.*wp-image.*')
+        images = soup.find_all("img", {"class": regex2})
+        #trying to get secondary images
+        try:
+            for image in images:
+                imageLink = str(image).split("src=")[1]
+                imageLink = re.sub(r'-\d\d\dx\d\d\d', '', imageLink)
+                imageLink = imageLink.split("width=")[0][:-1][1:-1]
+                secondaryImages.append(imageLink)
+        except:
+            continue
 
+        secondaryImageCaptions = []
+        captions = soup.find_all("figcaption")
+        #trying to get secondaryImageCaptions
+        try:
+            for caption in captions:
+                secondaryImageCaptions.append(caption.text)
+        except:
+            continue
+
+        #APPEND EVERYTHING INTO THIS MASSIVE JSON OBJECT YAYAYYAAA
+        obj.append({u"headline": headline, u"postDate": postingDate, u"authors": tempList, u"content": story,
+                    u"titleImage": mainImage, u"titleCaption": imageCaption, u"url": url, u"secondaryImages": secondaryImages,
+                    u"secondaryImageCaptions": secondaryImageCaptions})
+
+
+        #If you want to see the JSON object outputted in terminal, uncomment the line below
         #print(json.dumps(obj, indent=4))
-        #outputs to terminal
 
-        #text file for viewing
+        #text file for viewing in output.txt
         with open("output.txt", "w") as text_file:
             text_file.write(json.dumps(obj, indent=4))
             print("URL number " + str(count) + " scraped" + " (" + str(url) + ")")
             count += 1
 
-        #actual json data
+        #actual json data in data.json
         with open('data.json', 'w') as f:
             json.dump(obj, f)
-            
+
     except requests.exceptions.RequestException as e:
         print(e)
